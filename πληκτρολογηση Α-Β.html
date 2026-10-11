@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Παιχνίδι Πληκτρολόγησης</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .main-container {
+            background: white;
+            padding: 30px;
+            border-radius: 30px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+            text-align: center;
+            max-width: 700px;
+            width: 90%;
+            border: 5px solid #ffb6b9;
+            margin: 20px;
+        }
+
+        /* Έλεγχοι Κεφαλίδας (Tabs & Νέο Παιχνίδι) */
+        .header-controls {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid #eee;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            gap: 15px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+        }
+
+        .tab-btn {
+            font-size: 1.2em;
+            padding: 10px 20px;
+            background: none;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #888;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        .tab-btn:hover { background: #f0f0f0; }
+        .tab-btn.active {
+            background: #ff6b6b;
+            color: white;
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+        }
+
+        .new-game-btn {
+            font-size: 1.1em;
+            padding: 10px 20px;
+            background-color: #ff9f1c;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: inherit;
+            box-shadow: 0 4px 10px rgba(255, 159, 28, 0.3);
+            transition: transform 0.2s, background 0.2s;
+        }
+
+        .new-game-btn:hover {
+            background-color: #f39c12;
+            transform: scale(1.05);
+        }
+
+        h1 {
+            color: #ff6b6b;
+            font-size: 2.2em;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        /* Οθόνες */
+        #game-screen { display: block; }
+        #progress-screen { display: none; padding: 10px 0; }
+
+        .level-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .level-btn {
+            font-size: 1.1em;
+            padding: 10px 20px;
+            border: 3px solid transparent;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+
+        #btn-lvl1 { background-color: #ffe66d; color: #d35400; }
+        #btn-lvl2 { background-color: #4ecdc4; color: #ffffff; }
+        
+        .level-btn.active {
+            border-color: #ff6b6b;
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-around;
+            font-size: 1.3em;
+            color: #6a0572;
+            margin-bottom: 15px;
+            font-weight: bold;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 15px;
+        }
+
+        .icon-display {
+            font-size: 6em; 
+            margin: 10px 0;
+            transition: transform 0.3s ease;
+        }
+
+        .word-display {
+            font-size: 3.5em;
+            color: #4ecdc4;
+            margin: 10px 0 20px 0;
+            font-weight: bold;
+            letter-spacing: 2px;
+            transition: color 0.3s ease;
+            min-height: 60px;
+        }
+
+        input {
+            font-size: 2.2em;
+            padding: 12px;
+            border: 5px solid #ffe66d;
+            border-radius: 20px;
+            outline: none;
+            width: 70%;
+            text-align: center;
+            color: #333;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        input:focus { border-color: #ff6b6b; }
+
+        .message {
+            font-size: 1.8em;
+            height: 40px;
+            margin-top: 15px;
+            font-weight: bold;
+            color: #ff9f1c;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .tip { margin-top: 10px; font-size: 1em; color: #888; }
+
+        /* Μπάρες Προόδου (Progress Screen) */
+        .progress-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        
+        .progress-box h3 { margin: 0 0 10px 0; color: #333; font-size: 1.3em; }
+
+        .progress-bar-container {
+            width: 100%;
+            background: #e0e0e0;
+            border-radius: 15px;
+            height: 25px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4ecdc4, #2ed573);
+            width: 0%;
+            transition: width 0.8s ease-in-out;
+            border-radius: 15px;
+        }
+
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-weight: bold;
+            color: #333;
+            font-size: 0.9em;
+        }
+
+        #grand-congratulations {
+            display: none;
+            background: #fff3cd;
+            border: 3px dashed #ffc107;
+            padding: 20px;
+            border-radius: 20px;
+            margin-top: 20px;
+            animation: tada 1.5s infinite;
+        }
+
+        #grand-congratulations h2 { margin: 0; color: #d35400; font-size: 1.8em; }
+
+        /* Animations */
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-20px);}
+            60% {transform: translateY(-10px);}
+        }
+        .success-anim-icon { animation: bounce 1s; }
+        .success-anim-word { color: #2ed573; }
+        
+        @keyframes tada {
+            0% {transform: scale(1);}
+            10%, 20% {transform: scale(0.95) rotate(-2deg);}
+            30%, 50%, 70%, 90% {transform: scale(1.05) rotate(2deg);}
+            40%, 60%, 80% {transform: scale(1.05) rotate(-2deg);}
+            100% {transform: scale(1) rotate(0);}
+        }
+        .win-anim { animation: tada 1.5s; color: #ff4757; }
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        
+        <!-- Controls (Tabs + New Game Button) -->
+        <div class="header-controls">
+            <div class="tabs">
+                <button class="tab-btn active" id="tab-btn-game" onclick="switchTab('game')">🎮 Παιχνίδι</button>
+                <button class="tab-btn" id="tab-btn-progress" onclick="switchTab('progress')">🏆 Πρόοδος</button>
+            </div>
+            <button class="new-game-btn" onclick="startNewGame()">🔄 Νέο Παιχνίδι</button>
+        </div>
+
+        <!-- ================= ΟΘΟΝΗ ΠΑΙΧΝΙΔΙΟΥ ================= -->
+        <div id="game-screen">
+            <div class="level-buttons">
+                <button id="btn-lvl1" class="level-btn active" onclick="setLevel(1)">ΕΠΙΠΕΔΟ 1: ΚΕΦΑΛΑΙΑ</button>
+                <button id="btn-lvl2" class="level-btn" onclick="setLevel(2)">Επίπεδο 2: μικρά</button>
+            </div>
+
+            <div class="stats-bar">
+                <div>Λέξεις: <span id="word-count">0</span> / 30 🎯</div>
+                <div>Αστέρια: <span id="score">0</span> 🌟</div>
+            </div>
+            
+            <div class="icon-display" id="icon-display">❓</div>
+            <div class="word-display" id="word-display">...</div>
+            
+            <input type="text" id="type-input" autocomplete="off" placeholder="Γράψε εδώ..." autofocus>
+            
+            <div class="message" id="message">Μπράβο!</div>
+
+            <div class="tip" id="tip-text">💡 Στα κεφαλαία δεν βάζουμε τόνους!</div>
+        </div>
+
+        <!-- ================= ΟΘΟΝΗ ΠΡΟΟΔΟΥ ================= -->
+        <div id="progress-screen">
+            <h1>Η Πρόοδός σου 📊</h1>
+            
+            <div class="progress-box">
+                <h3>Επίπεδο 1: ΚΕΦΑΛΑΙΑ 🔠</h3>
+                <div class="progress-bar-container">
+                    <div class="progress-fill" id="bar-fill-1"></div>
+                    <div class="progress-text"><span id="bar-text-1">0</span> / 30</div>
+                </div>
+            </div>
+
+            <div class="progress-box">
+                <h3>Επίπεδο 2: μικρά γράμματα 🔡</h3>
+                <div class="progress-bar-container">
+                    <div class="progress-fill" id="bar-fill-2"></div>
+                    <div class="progress-text"><span id="bar-text-2">0</span> / 30</div>
+                </div>
+            </div>
+
+            <div id="grand-congratulations">
+                <h2>🎉 ΤΕΡΑΣΤΙΑ ΣΥΓΧΑΡΗΤΗΡΙΑ! 🎉</h2>
+                <p>Ολοκλήρωσες και τα δύο επίπεδα! Είσαι πρωταθλητής/πρωταθλήτρια στην πληκτρολόγηση! 🥇🏆</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const wordsData = [
+            { word: "καράβι", icon: "🚢" }, { word: "βάρκα", icon: "⛵" },
+            { word: "λουλούδι", icon: "🌸" }, { word: "φεγγάρι", icon: "🌙" },
+            { word: "παγωτό", icon: "🍦" }, { word: "αγελάδα", icon: "🐄" },
+            { word: "πρόβατο", icon: "🐑" }, { word: "λύκος", icon: "🐺" },
+            { word: "τίγρης", icon: "🐯" }, { word: "λιοντάρι", icon: "🦁" },
+            { word: "μαϊμού", icon: "🐵" }, { word: "ελέφαντας", icon: "🐘" },
+            { word: "αρκούδα", icon: "🐻" }, { word: "πεταλούδα", icon: "🦋" },
+            { word: "μέλισσα", icon: "🐝" }, { word: "αράχνη", icon: "🕷️" },
+            { word: "ποδήλατο", icon: "🚲" }, { word: "καπέλο", icon: "🧢" },
+            { word: "παπούτσι", icon: "👟" }, { word: "φούστα", icon: "👗" },
+            { word: "μπλούζα", icon: "👕" }, { word: "παντελόνι", icon: "👖" },
+            { word: "καρότο", icon: "🥕" }, { word: "μπανάνα", icon: "🍌" },
+            { word: "κεράσι", icon: "🍒" }, { word: "καρπούζι", icon: "🍉" },
+            { word: "σταφύλι", icon: "🍇" }, { word: "φράουλα", icon: "🍓" },
+            { word: "λεμόνι", icon: "🍋" }, { word: "πίτσα", icon: "🍕" }
+        ];
+
+        const messages = [
+            "Μπράβο! 👏", "Τέλεια! 🌟", "Είσαι αστέρι! ⭐", 
+            "Φανταστικά! 🚀", "Συνέχισε έτσι! 💪", "Υπέροχα! 🏆"
+        ];
+
+        let progress = {
+            1: { words: 0, score: 0 },
+            2: { words: 0, score: 0 }
+        };
+
+        let currentLevel = 1; 
+        let currentItem = null;
+        let targetWord = '';
+        const MAX_WORDS = 30;
+        let isWaiting = false;
+
+        const iconDisplay = document.getElementById('icon-display');
+        const wordDisplay = document.getElementById('word-display');
+        const typeInput = document.getElementById('type-input');
+        const messageDisplay = document.getElementById('message');
+        const scoreDisplay = document.getElementById('score');
+        const wordCountDisplay = document.getElementById('word-count');
+        const tipText = document.getElementById('tip-text');
+        
+        const gameScreen = document.getElementById('game-screen');
+        const progressScreen = document.getElementById('progress-screen');
+        const tabGameBtn = document.getElementById('tab-btn-game');
+        const tabProgressBtn = document.getElementById('tab-btn-progress');
+
+        // ΝΕΟ ΠΑΙΧΝΙΔΙ - Μηδενίζει τα πάντα
+        function startNewGame() {
+            progress = {
+                1: { words: 0, score: 0 },
+                2: { words: 0, score: 0 }
+            };
+            document.getElementById('grand-congratulations').style.display = 'none';
+            switchTab('game');
+            setLevel(1);
+        }
+
+        function switchTab(tabName) {
+            if (tabName === 'game') {
+                gameScreen.style.display = 'block';
+                progressScreen.style.display = 'none';
+                tabGameBtn.classList.add('active');
+                tabProgressBtn.classList.remove('active');
+                if (progress[currentLevel].words < MAX_WORDS) typeInput.focus();
+            } else {
+                gameScreen.style.display = 'none';
+                progressScreen.style.display = 'block';
+                tabGameBtn.classList.remove('active');
+                tabProgressBtn.classList.add('active');
+                updateProgressUI();
+            }
+        }
+
+        function updateProgressUI() {
+            const perc1 = (progress[1].words / MAX_WORDS) * 100;
+            document.getElementById('bar-fill-1').style.width = perc1 + '%';
+            document.getElementById('bar-text-1').innerText = progress[1].words;
+
+            const perc2 = (progress[2].words / MAX_WORDS) * 100;
+            document.getElementById('bar-fill-2').style.width = perc2 + '%';
+            document.getElementById('bar-text-2').innerText = progress[2].words;
+
+            if (progress[1].words === MAX_WORDS && progress[2].words === MAX_WORDS) {
+                document.getElementById('grand-congratulations').style.display = 'block';
+            } else {
+                document.getElementById('grand-congratulations').style.display = 'none';
+            }
+        }
+
+        function removeAccents(str) {
+            return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        }
+
+        function setLevel(level) {
+            currentLevel = level;
+            document.getElementById('btn-lvl1').classList.toggle('active', level === 1);
+            document.getElementById('btn-lvl2').classList.toggle('active', level === 2);
+            
+            if (level === 1) {
+                tipText.innerHTML = "💡 Στα κεφαλαία δεν βάζουμε τόνους!";
+                typeInput.style.textTransform = "uppercase";
+            } else {
+                tipText.innerHTML = "💡 Μην ξεχνάς τον τόνο! Πάτα το <b>;</b> και μετά το φωνήεν.";
+                typeInput.style.textTransform = "none";
+            }
+            
+            loadLevelState();
+        }
+
+        function loadLevelState() {
+            scoreDisplay.textContent = progress[currentLevel].score;
+            wordCountDisplay.textContent = progress[currentLevel].words;
+            wordDisplay.classList.remove('win-anim');
+            iconDisplay.classList.remove('win-anim');
+            messageDisplay.style.opacity = '0';
+
+            if (progress[currentLevel].words >= MAX_WORDS) {
+                endGame();
+            } else {
+                typeInput.style.display = 'inline-block';
+                nextWord();
+            }
+        }
+
+        function getRandomItem() {
+            let newItem = currentItem;
+            while (newItem === currentItem) {
+                newItem = wordsData[Math.floor(Math.random() * wordsData.length)];
+            }
+            return newItem;
+        }
+
+        function nextWord() {
+            isWaiting = false;
+            currentItem = getRandomItem();
+            
+            if (currentLevel === 1) {
+                targetWord = removeAccents(currentItem.word).toUpperCase();
+            } else {
+                targetWord = currentItem.word.toLowerCase();
+            }
+
+            iconDisplay.textContent = currentItem.icon;
+            wordDisplay.textContent = targetWord;
+            
+            iconDisplay.classList.remove('success-anim-icon');
+            wordDisplay.classList.remove('success-anim-word');
+            
+            typeInput.value = '';
+            typeInput.focus();
+        }
+
+        function endGame() {
+            isWaiting = true;
+            iconDisplay.textContent = "🏆";
+            iconDisplay.classList.add('win-anim');
+            wordDisplay.textContent = "ΣΥΓΧΑΡΗΤΗΡΙΑ! 🎉";
+            wordDisplay.classList.add('win-anim');
+            messageDisplay.textContent = "Ολοκλήρωσες το επίπεδο!";
+            messageDisplay.style.opacity = '1';
+            typeInput.style.display = 'none';
+            tipText.innerHTML = "💡 Πάτα το κουμπί <b>🔄 Νέο Παιχνίδι</b> για να παίξεις ξανά!";
+        }
+
+        typeInput.addEventListener('input', (e) => {
+            if (isWaiting) return;
+
+            let typedText = e.target.value.trim();
+            
+            if (currentLevel === 1) {
+                typedText = removeAccents(typedText).toUpperCase();
+            } else {
+                typedText = typedText.toLowerCase();
+            }
+            
+            if (typedText === targetWord) {
+                isWaiting = true;
+                
+                progress[currentLevel].words++;
+                progress[currentLevel].score++;
+                
+                scoreDisplay.textContent = progress[currentLevel].score;
+                wordCountDisplay.textContent = progress[currentLevel].words;
+                
+                messageDisplay.textContent = messages[Math.floor(Math.random() * messages.length)];
+                messageDisplay.style.opacity = '1';
+                
+                iconDisplay.classList.add('success-anim-icon');
+                wordDisplay.classList.add('success-anim-word');
+                
+                if (progress[currentLevel].words >= MAX_WORDS) {
+                    setTimeout(endGame, 1000);
+                } else {
+                    setTimeout(() => {
+                        messageDisplay.style.opacity = '0';
+                        nextWord();
+                    }, 1300);
+                }
+            }
+        });
+
+        // Αρχική Εκκίνηση
+        setLevel(1);
+    </script>
+</body>
+</html>
